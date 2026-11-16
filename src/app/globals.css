@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ───────────────────────── Design tokens ───────────────────────── */
+@theme {
+  --color-ink: #0a0c10;
+  --color-ink-2: #11141a;
+  --color-ink-3: #1a1e26;
+  --color-ivory: #f5f1e9;
+  --color-paper: #fbf9f5;
+  --color-sand: #e9e2d4;
+  --color-gold: #c8a464;
+  --color-gold-soft: #e6d3a8;
+  --color-gold-deep: #85672f;
+  --color-mist: #8b909a;
+  --color-stone: #5b5f68;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Japanese uses the high-quality system fonts (Hiragino / Yu / Noto CJK) — zero download, no render-blocking CSS. */
+  --font-sans: var(--font-manrope), "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", YuGothic, Meiryo, "Noto Sans JP", "Noto Sans CJK JP", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", "Noto Serif CJK JP", ui-serif, Georgia, serif;
+  --font-jp-display: "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", "Noto Serif CJK JP", ui-serif, serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-marquee: marquee var(--marquee-duration, 40s) linear infinite;
+  --animate-marquee-reverse: marquee-reverse var(--marquee-duration, 40s) linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-shine: shine 6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+
+  @keyframes rise {
+    from { transform: translateY(110%); }
+    to { transform: translateY(0); }
+  }
+  /* transform-only entrance: element is visible from the first frame (keeps LCP fast) */
+  @keyframes lift {
+    from { transform: translateY(32px) scale(0.97); }
+    to { transform: none; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes marquee-reverse {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  @keyframes shine {
+    0% { background-position: 200% 50%; }
+    100% { background-position: -200% 50%; }
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    100% { transform: scale(1.9); opacity: 0; }
   }
 }
 
+/* ───────────────────────── Base ───────────────────────── */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-padding-top: 96px;
+}
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+/* Japanese typography tuning */
+html[lang="ja"] body { letter-spacing: 0.02em; line-height: 1.85; font-feature-settings: "palt"; }
+html[lang="ja"] .font-display { font-family: var(--font-jp-display); font-weight: 500; letter-spacing: 0.02em; }
+html[lang="ja"] :is(h1, h2, h3) { word-break: auto-phrase; }
+/* Never let an unbreakable phrase/URL push the layout wider than the screen (mainly long JA phrases on phones). */
+:is(h1, h2, h3, h4, p, dd, figcaption) { overflow-wrap: anywhere; }
+html[lang="ja"] .heading-xl { font-size: clamp(2.4rem, 5.2vw, 4.4rem); line-height: 1.25; }
+html[lang="ja"] .heading-lg { font-size: clamp(1.9rem, 3.4vw, 2.9rem); line-height: 1.35; }
+html[lang="ja"] .italic { font-style: normal; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* ───────────────────────── Utilities ───────────────────────── */
+@utility container-luxe {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (width >= 48rem) { padding-inline: 2.5rem; }
+}
+
+@utility text-gold-gradient {
+  background: linear-gradient(100deg, #9c7a3c 0%, #e6d3a8 30%, #c8a464 50%, #f3e6c4 70%, #9c7a3c 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shine);
+}
+
+@utility grain {
+  position: relative;
+  &::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@utility hairline-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* CSS-driven entrance animations: start on first paint, no JS needed (keeps LCP fast). */
+@utility anim-rise {
+  animation: rise 1.2s var(--ease-luxe) both;
+}
+@utility anim-lift {
+  animation: lift 1.3s var(--ease-luxe) both;
+}
+@utility anim-fade-up {
+  animation: fade-up 0.9s var(--ease-luxe) both;
+}
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
